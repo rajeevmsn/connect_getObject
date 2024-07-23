@@ -57,6 +57,117 @@ def directoryCheck(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+def bangleStream28(df):
+    bufferStart = []
+    bufferStop = []
+    ax_M = []
+    ay_M = []
+    az_M = []
+    cx_M = []
+    cy_M = []
+    cz_M = []
+    cdx_M = []
+    cdy_M = []
+    cdz_M = []
+    hrmRaw_M = []
+    hrmFilt_M = []
+    hrmBPM_M = []
+    hrmConfidence_M = []
+    ax_S = []
+    ay_S = []
+    az_S = []
+    cx_S = []
+    cy_S = []
+    cz_S = []
+    cdx_S = []
+    cdy_S = []
+    cdz_S = []
+    hrmRaw_S = []
+    hrmFilt_S = []
+    hrmBPM_S = []
+    hrmConfidence_S = []
+    sessionId = []
+    applicationId = []
+    createdAt = []
+    objectId = []
+
+
+    df['bangle'] = df['bangle'].apply(lambda x: json.loads(x.replace("'", '"')) if isinstance(x, str) else x)
+    for _, row in df.iterrows():
+        session = row['sessionId']
+        application = row['applicationId']
+        created = row['createdAt']
+        obj = row['objectId']
+        for bangle in row['bangle']:
+            bufferStart.append(bangle.get('bufferStart'))
+            bufferStop.append(bangle.get('bufferStop'))
+            ax_M.append(bangle.get('ax_M'))
+            ay_M.append(bangle.get('ay_M'))
+            az_M.append(bangle.get('az_M'))
+            cx_M.append(bangle.get('cx_M'))
+            cy_M.append(bangle.get('cy_M'))
+            cz_M.append(bangle.get('cz_M'))
+            cdx_M.append(bangle.get('cdx_M'))
+            cdy_M.append(bangle.get('cdy_M'))
+            cdz_M.append(bangle.get('cdz_M'))
+            hrmRaw_M.append(bangle.get('hrmRaw_M'))
+            hrmFilt_M.append(bangle.get('hrmFilt_M'))
+            hrmBPM_M.append(bangle.get('hrmBPM_M'))
+            hrmConfidence_M.append(bangle.get('hrmConfidence_M'))
+            ax_S.append(bangle.get('ax_S'))
+            ay_S.append(bangle.get('ay_S'))
+            az_S.append(bangle.get('az_S'))
+            cx_S.append(bangle.get('cx_S'))
+            cy_S.append(bangle.get('cy_S'))
+            cz_S.append(bangle.get('cz_S'))
+            cdx_S.append(bangle.get('cdx_S'))
+            cdy_S.append(bangle.get('cdy_S'))
+            cdz_S.append(bangle.get('cdz_S'))
+            hrmRaw_S.append(bangle.get('hrmRaw_S'))
+            hrmFilt_S.append(bangle.get('hrmFilt_S'))
+            hrmBPM_S.append(bangle.get('hrmBPM_S'))
+            hrmConfidence_S.append(bangle.get('hrmConfidence_S'))
+            sessionId.append(session)
+            applicationId.append(application)
+            createdAt.append(created)
+            objectId.append(obj)
+    bangleDf = pd.DataFrame({
+        'sessionId': sessionId,
+        'applicationId': applicationId,
+        'createdAt': createdAt,
+        'objectId': objectId,
+        'bufferStart': bufferStart,
+        'bufferStop': bufferStop,
+        'ax_M': ax_M,
+        'ay_M': ay_M,
+        'az_M': az_M,
+        'cx_M': cx_M,
+        'cy_M': cy_M,
+        'cz_M': cz_M,
+        'cdx_M': cdx_M,
+        'cdy_M': cdy_M,
+        'cdz_M': cdz_M,
+        'hrmRaw_M': hrmRaw_M,
+        'hrmFilt_M': hrmFilt_M,
+        'hrmBPM_M': hrmBPM_M,
+        'hrmConfidence_M': hrmConfidence_M,
+        'ax_S': ax_S,
+        'ay_S': ay_S,
+        'az_S': az_S,
+        'cx_S': cx_S,
+        'cy_S': cy_S,
+        'cz_S': cz_S,
+        'cdx_S': cdx_S,
+        'cdy_S': cdy_S,
+        'cdz_S': cdz_S,
+        'hrmRaw_S': hrmRaw_S,
+        'hrmFilt_S': hrmFilt_S,
+        'hrmBPM_S': hrmBPM_S,
+        'hrmConfidence_S': hrmConfidence_S
+    })
+    print(bangleDf.shape)
+    return bangleDf
+
 def userAnnotations(df):
     df['events'] = df['events'].apply(lambda x: json.loads(x.replace("'", '"'))if isinstance(x, str) else x)
     eventsData = []
