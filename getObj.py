@@ -57,7 +57,28 @@ def directoryCheck(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-def saveData(df, dataClassFolder):
+def userAnnotations(df):
+    df['events'] = df['events'].apply(lambda x: json.loads(x.replace("'", '"'))if isinstance(x, str) else x)
+    eventsData = []
+    for index, row in df.iterrows():
+        for event in row['events']:
+            eventEntry = {
+                'sessionId': row['sessionId'],
+                'userId': row['userId'],
+                'applicationId': row['applicationId'],
+                'createdAt': row['createdAt'],
+                'updatedAt': row['updatedAt'],
+                'objectId': row['objectId'],
+                'timeStamp': event['timeStamp'],
+                'userAnnotation': event['userAnnotation'],
+                'confidence': event.get('confidence', None),
+                'activity': event.get('activity', None)
+            }
+            eventsData.append(eventEntry)
+    
+    eventsDf = pd.DataFrame(eventsData)
+    print(eventsDf.shape)
+    return eventsDf
     print(f"Number of different userId: {len(df['userId'].unique())}")
     userIdCount = df['userId'].value_counts()
     print(userIdCount)
