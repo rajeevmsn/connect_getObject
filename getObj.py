@@ -1,6 +1,8 @@
 import requests
 import pandas as pd
 import os
+import json
+from io import StringIO
 from dotenv import load_dotenv
 
 connectURL = 'https://connect-project.io'
@@ -190,6 +192,13 @@ def userAnnotations(df):
     eventsDf = pd.DataFrame(eventsData)
     print(eventsDf.shape)
     return eventsDf
+
+functionMapping = {
+    'bangleStream28': bangleStream28,
+    'userAnnotations': userAnnotations
+}
+
+def saveData(df, dataClassFolder, functionMapping):
     print(f"Number of different userId: {len(df['userId'].unique())}")
     userIdCount = df['userId'].value_counts()
     print(userIdCount)
@@ -199,13 +208,21 @@ def userAnnotations(df):
         print(f"Application ID: {applicationId}")
         folderPath = os.path.join(dataClassFolder, applicationId)
         directoryCheck(folderPath)
+
+        functionName = dataClassFolder.split('/')[-1]
+        if functionName in functionMapping:
+            function = functionMapping[functionName]
+        else:
+            raise ValueError(f"Function {functionName} not found in function mapping.")
+
         # Save the individual dataframes as CSV files in the folder
         df['userId'] = df['userId'].fillna('users12345')
         for userId in dfApp['userId'].unique():
-            dfUser = dfApp[dfApp['userId'] == userId]
-            file_path = os.path.join(folderPath, f"{userId}.{format}")
-            dfUser.to_csv(file_path, index=False)
-            print(f"File saved: {file_path}")
+            dfUser = pd.DataFrame(dfApp[dfApp['userId'] == userId])
+            dfFinal = function(dfUser)
+            filePath = os.path.join(folderPath, f"{userId}.{format}")
+            dfFinal.to_csv(filePath, index=False)
+            print(f"File saved: {filePath}")
 
 
 def main():
@@ -213,15 +230,9 @@ def main():
     for dataClassItem in dataClass:
         dataClassFolder = os.path.join(connectClasses, dataClassItem)
         directoryCheck(dataClassFolder)
-
         data = retrieveAllData(dataClassItem, sessionToken)
-        print(len(data))
-
         df = pd.DataFrame(data)
-        print(df.head(2))
-        print(df.columns)
-
-        saveData(df, dataClassFolder)
+        saveData(df, dataClassFolder, functionMapping)
 
 if __name__ == '__main__':
     main()
