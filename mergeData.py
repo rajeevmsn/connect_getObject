@@ -2,14 +2,16 @@ import pandas as pd
 import glob
 from getObj import directoryCheck
 
-bangleStreamPath = 'connectClasses/bangleStream28/cnhb88Civu'
-annotationPath = 'connectClasses/userAnnotations/cnhb88Civu'
-annotataionTime = 100000 #Time to mark the annotation
+bangleStreamPath = 'connectClasses/bangleStream28/eskQd0UPDC' #Path to the folder with bangle stream data
+annotationPath = 'connectClasses/userAnnotations/eskQd0UPDC' #Path to the folder with user annotations
+annotataionTime = 300000 #Time to mark the annotation
 
 directoryCheck('mergedData')
 
 bangleCSVs = glob.glob(bangleStreamPath + '/*.csv')
 annotationCSVs = glob.glob(annotationPath + '/*.csv')
+print("Bangle CSVs: ", bangleCSVs)
+print("Annotation CSVs: ", annotationCSVs)
 
 def associateBangleAnnotations(bangleData, annotationData, annotationTime):
     mergedData = bangleData.copy()
@@ -28,10 +30,15 @@ def associateBangleAnnotations(bangleData, annotationData, annotationTime):
 
 for bangleCSV in bangleCSVs:
     csvName = bangleCSV.split('/')[-1]
-    print("Mergint data for: ", csvName)
-    bangleData = pd.read_csv(bangleCSV)
-    annotationsData = pd.read_csv(annotationPath + '/' + csvName)
-    mergedData = associateBangleAnnotations(bangleData, annotationsData, annotataionTime)
-    print(mergedData['annotations'].value_counts())
-    mergedData.to_csv('mergedData/' + csvName, index=False)
-
+    for annotationCSV in annotationCSVs:
+        annotationName = annotationCSV.split('/')[-1]
+        if csvName == annotationName:
+            print("Mergint data for: ", csvName)
+            bangleData = pd.read_csv(bangleCSV)
+            annotationsData = pd.read_csv(annotationPath + '/' + csvName)
+            mergedData = associateBangleAnnotations(bangleData, annotationsData, annotataionTime)
+            print(mergedData['annotations'].value_counts())
+            mergedData.to_csv('mergedData/' + csvName, index=False)
+        else:
+            continue
+    
