@@ -55,7 +55,6 @@ def retrieveAllData(connectClass, connectToken):
     return allData
 
 def directoryCheck(directory):
-    """Check if the directory exists, if not create it."""
     if not os.path.exists(directory):
         os.makedirs(directory)
 
