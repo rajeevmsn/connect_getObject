@@ -4,13 +4,12 @@ from getObj import directoryCheck
 
 bangleStreamPath = 'connectClasses/bangleStream28/eskQd0UPDC' #Path to the folder with bangle stream data
 annotationPath = 'connectClasses/userAnnotations/eskQd0UPDC' #Path to the folder with user annotations
-annotataionTime = 300000 #Time to mark the annotation
+annotataionTime = [150000, 300000, 450000, 600000] #Time to mark the annotation
 calmData, stressedData = [], []
 
 directoryCheck('mergedData')
 directoryCheck('splitData')
-directoryCheck('splitData/calm')
-directoryCheck('splitData/stressed')
+
 
 bangleCSVs = glob.glob(bangleStreamPath + '/*.csv')
 annotationCSVs = glob.glob(annotationPath + '/*.csv')
@@ -39,7 +38,9 @@ def categorizeAnnotation(annotation):
     else: 
         return stressedData
 
-def splitData(associated, name):
+def splitData(associated, name, time):
+    directoryCheck('splitData/' + str(time)+ '/calm')
+    directoryCheck('splitData/' + str(time)+ '/stressed')
     print("df shape: ", associated.shape)
     name = name.split('.')[0]
     nrows, _ = associated.shape
@@ -63,7 +64,7 @@ def splitData(associated, name):
             data = categorizeAnnotation(previousAnnotation)
             data.append(df)
             if len(currentSeries) >= 10:
-                df.to_csv('splitData/' + previousAnnotation + '/' + name + '_' + str(num), index=False)
+                df.to_csv('splitData/' + str(time) + '/' + previousAnnotation + '/' + name + '_' + str(num), index=False)
             currentSeries = []
             num += 1
         elif previousAnnotation == None:
@@ -75,7 +76,7 @@ def splitData(associated, name):
             data = categorizeAnnotation(previousAnnotation)
             data.append(df)
             if len(currentSeries) >= 10:
-                df.to_csv('splitData/' + previousAnnotation + '/' + name + '_' + str(num), index=False)
+                df.to_csv('splitData/' + str(time) + '/' + previousAnnotation + '/' + name + '_' + str(num), index=False)
             currentSeries = [row]
             num += 1
 
@@ -87,7 +88,7 @@ def splitData(associated, name):
         df = pd.DataFrame(columns=col, data=currentSeries)
         data = categorizeAnnotation(annotation)
         data.append(df)
-        df.to_csv('splitData/' + annotation + '/' + name + '_' + str(num), index=False)
+        df.to_csv('splitData/' + str(time) + '/' + annotation + '/' + name + '_' + str(num), index=False)
         num += 1
     
     print(str(num - 1) + " files created for " + name)
@@ -100,11 +101,13 @@ for bangleCSV in bangleCSVs:
             print("Merging data for: ", csvName)
             bangleData = pd.read_csv(bangleCSV)
             annotationsData = pd.read_csv(annotationPath + '/' + csvName)
-            mergedData = associateBangleAnnotations(bangleData, annotationsData, annotataionTime)
-            print(mergedData['annotations'].value_counts())
-            mergedData.to_csv('mergedData/' + csvName, index=False)
-            print("Splitting data for: ", csvName)
-            splitData(mergedData, csvName)
+            for time in annotataionTime:
+                directoryCheck('mergedData/' + str(time))
+                mergedData = associateBangleAnnotations(bangleData, annotationsData, time)
+                print(mergedData['annotations'].value_counts())
+                mergedData.to_csv('mergedData/' + str(time) + '/' + csvName, index=False)
+                print("Splitting data for: ", csvName)
+                splitData(mergedData, csvName, time)
         else:
             continue
     
