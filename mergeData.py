@@ -9,6 +9,8 @@ calmData, stressedData = [], []
 
 directoryCheck('mergedData')
 directoryCheck('splitData')
+directoryCheck('splitData/calm')
+directoryCheck('splitData/stressed')
 
 bangleCSVs = glob.glob(bangleStreamPath + '/*.csv')
 annotationCSVs = glob.glob(annotationPath + '/*.csv')
@@ -60,7 +62,8 @@ def splitData(associated, name):
             df = pd.DataFrame(columns=col, data=currentSeries)
             data = categorizeAnnotation(previousAnnotation)
             data.append(df)
-            df.to_csv('splitData/' + name + str(num), index=False)
+            if len(currentSeries) >= 10:
+                df.to_csv('splitData/' + previousAnnotation + '/' + name + '_' + str(num), index=False)
             currentSeries = []
             num += 1
         elif previousAnnotation == None:
@@ -71,7 +74,10 @@ def splitData(associated, name):
             df = pd.DataFrame(columns=col, data=currentSeries)
             data = categorizeAnnotation(previousAnnotation)
             data.append(df)
+            if len(currentSeries) >= 10:
+                df.to_csv('splitData/' + previousAnnotation + '/' + name + '_' + str(num), index=False)
             currentSeries = [row]
+            num += 1
 
         i += 1
         previousRow = row
@@ -81,15 +87,17 @@ def splitData(associated, name):
         df = pd.DataFrame(columns=col, data=currentSeries)
         data = categorizeAnnotation(annotation)
         data.append(df)
+        df.to_csv('splitData/' + annotation + '/' + name + '_' + str(num), index=False)
+        num += 1
     
-    print(str(num) + " files created for " + name)
+    print(str(num - 1) + " files created for " + name)
 
 for bangleCSV in bangleCSVs:
     csvName = bangleCSV.split('/')[-1]
     for annotationCSV in annotationCSVs:
         annotationName = annotationCSV.split('/')[-1]
         if csvName == annotationName:
-            print("Mergint data for: ", csvName)
+            print("Merging data for: ", csvName)
             bangleData = pd.read_csv(bangleCSV)
             annotationsData = pd.read_csv(annotationPath + '/' + csvName)
             mergedData = associateBangleAnnotations(bangleData, annotationsData, annotataionTime)
